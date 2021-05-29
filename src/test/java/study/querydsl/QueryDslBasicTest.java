@@ -15,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static study.querydsl.entity.QMember.member;
 
 @SpringBootTest
 @Transactional
@@ -67,17 +68,67 @@ public class QueryDslBasicTest {
     public void startQueryDsl() throws Exception {
         //given
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        QMember m = QMember.member;
 
         //when
         Member findMember = queryFactory
-                .select(m)
-                .from(m)
-                .where(m.username.eq("member1"))
+                .select(member)
+                .from(member)
+                .where(member.username.eq("member1"))
                 .fetchOne();
 
 
         //then
         assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+
+
+    @Test
+    public void searchAndParam() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        Member findMember = queryFactory
+                .selectFrom(QMember.member)
+                .where(
+                        QMember.member.username.eq("member1")
+                        ,(QMember.member.age.eq(10)))
+                .fetchOne();
+
+        //then
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+
+    /**
+     * 1 나이 내림차순
+     * 2 이름 올림차순
+     * 3 2에서 회원이름이 없다면 마지막 출력
+     * @throws Exception
+     */
+    @Test
+    public void sort() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        em.persist(new Member(null, 100));
+        em.persist(new Member("member5", 100));
+        em.persist(new Member("member6", 100));
+
+        //when
+        List<Member> result = queryFactory.
+                selectFrom(member)
+                .where(member.age.eq(100))
+                .orderBy(member.age.desc(), member.username.asc().nullsLast())
+                .fetch();
+
+        Member member5 = result.get(0);
+        Member member6 = result.get(1);
+        Member memberNull = result.get(2);
+
+        //then
+        assertThat(member5.getUsername()).isEqualTo("member5");
+        assertThat(member6.getUsername()).isEqualTo("member6");
+        assertThat(memberNull.getUsername()).isNull();
     }
 }
