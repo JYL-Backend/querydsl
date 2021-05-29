@@ -226,4 +226,32 @@ public class QueryDslBasicTest {
 
         //then
     }
+
+    /**
+     *  회원과 팀을 조회하면서 , 팀 이름이 teamA인 팀만 조인, 회원은 모두 조회
+     * @throws Exception
+     */
+    @Test
+    public void join_on_filtering() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(member.team, team).on(team.name.eq("teamA"))
+                .fetch();
+
+        Tuple member1 = result.get(0);
+        Tuple member2 = result.get(1);
+        Tuple member3 = result.get(2);
+        Tuple member4 = result.get(3);
+
+        //then
+        assertThat(member1.get(team)).isNotNull();
+        assertThat(member2.get(team)).isNotNull();
+        assertThat(member3.get(team)).isNull();
+        assertThat(member4.get(team)).isNull();
+    }
 }
