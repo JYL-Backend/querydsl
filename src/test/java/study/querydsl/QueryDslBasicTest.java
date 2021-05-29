@@ -131,4 +131,22 @@ public class QueryDslBasicTest {
         assertThat(member6.getUsername()).isEqualTo("member6");
         assertThat(memberNull.getUsername()).isNull();
     }
+
+    @Test
+    public void paging1() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<Member> result = queryFactory.
+                selectFrom(member)
+                .orderBy(member.age.desc())
+                .offset(1)
+                .limit(2)
+                .fetch();
+
+
+        //then
+        assertThat(result.size()).isEqualTo(2);
+    }
 }
