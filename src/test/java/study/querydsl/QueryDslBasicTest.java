@@ -207,4 +207,23 @@ public class QueryDslBasicTest {
         assertThat(teamB.get(member.age.avg())).isEqualTo(35);
 
     }
+
+    /**
+     * 팀A에 소속된 모든 회원
+     * @throws Exception
+     */
+    @Test
+    public void join() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .join(member.team, team)
+                .where(team.name.eq("teamA"))
+                .fetch();
+
+        //then
+    }
 }
