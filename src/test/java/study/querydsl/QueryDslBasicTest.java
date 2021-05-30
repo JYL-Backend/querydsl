@@ -348,4 +348,25 @@ public class QueryDslBasicTest {
         //then
         assertThat(result.size()).isEqualTo(2);
     }
+    @Test
+    public void basicCase() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<String> result = queryFactory
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        //then
+        assertThat(result.get(0)).isEqualTo("열살");
+        assertThat(result.get(1)).isEqualTo("스무살");
+        assertThat(result.get(2)).isEqualTo("기타");
+        assertThat(result.get(3)).isEqualTo("기타");
+    }
+
 }
