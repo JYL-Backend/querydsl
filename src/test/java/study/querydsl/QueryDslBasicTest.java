@@ -1,6 +1,7 @@
 package study.querydsl;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -298,5 +299,53 @@ public class QueryDslBasicTest {
         //when
 
         //then
+    }
+
+    /**
+     * 나이가 가장많은 회원 조회
+     * @throws Exception
+     */
+    @Test
+    public void subQuery() throws Exception {
+        //given
+        QMember m2 = new QMember("member2");
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(
+                        JPAExpressions
+                                .select(m2.age.max())
+                                .from(m2)
+                ))
+                .fetch();
+
+        //then
+        assertThat(result).extracting("age")
+                .containsExactly(40);
+    }
+    /**
+     * 나이가 평균이상회원 조회
+     * @throws Exception
+     */
+    @Test
+    public void subQuery2() throws Exception {
+        //given
+        QMember m2 = new QMember("member2");
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.goe(
+                        JPAExpressions
+                                .select(m2.age.avg())
+                                .from(m2)
+                ))
+                .fetch();
+
+        //then
+        assertThat(result.size()).isEqualTo(2);
     }
 }
