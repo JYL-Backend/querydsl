@@ -1,6 +1,7 @@
 package study.querydsl;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
@@ -8,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
 import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
 import study.querydsl.entity.QTeam;
@@ -368,5 +371,72 @@ public class QueryDslBasicTest {
         assertThat(result.get(2)).isEqualTo("기타");
         assertThat(result.get(3)).isEqualTo("기타");
     }
+    @Test
+    public void findDtoBySetter() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
 
+        //when
+        List<MemberDto> result = queryFactory
+                .select(Projections.bean(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .orderBy(member.age.desc())
+                .fetch();
+
+        //then
+        assertThat(result.get(0).getAge()).isEqualTo(40);
+    }
+
+    @Test
+    public void findDtoByField() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<MemberDto> result = queryFactory
+                .select(Projections.fields(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .orderBy(member.age.desc())
+                .fetch();
+
+        //then
+        assertThat(result.get(0).getAge()).isEqualTo(40);
+    }
+    @Test
+    public void findDtoByConstructor() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<MemberDto> result = queryFactory
+                .select(Projections.constructor(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .orderBy(member.age.desc())
+                .fetch();
+
+        //then
+        assertThat(result.get(0).getAge()).isEqualTo(40);
+    }
+
+    @Test
+    public void findDtoByQeuryProjection() throws Exception {
+        //given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        //when
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .orderBy(member.age.desc())
+                .fetch();
+
+        //then
+        assertThat(result.get(0).getAge()).isEqualTo(40);
+    }
 }
